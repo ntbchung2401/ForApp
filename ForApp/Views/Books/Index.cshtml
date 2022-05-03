@@ -60,9 +60,7 @@
             <td>
                 @Html.DisplayFor(modelItem => item.Desc)
             </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ImgUrl)
-            </td>
+            <td> <img src="@("~/image/" + item.ImgUrl)" asp-append-version="true" width="150px" height="150px"> </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Store.Id)
             </td>

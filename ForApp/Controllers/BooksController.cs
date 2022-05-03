@@ -8,17 +8,22 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ForApp.Data;
 using ForApp.Models;
+using Microsoft.AspNetCore.Identity;
+using ForApp.Areas.Identity.Data;
 
 namespace ForApp.Controllers
 {
     public class BooksController : Controller
     {
         private readonly UserContext _context;
+        private readonly UserManager<AppUser> _userManager;
 
-        public BooksController(UserContext context)
+        public BooksController(UserContext context, UserManager<AppUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
+
 
         // GET: Books
         public async Task<IActionResult> Index()
@@ -58,34 +63,31 @@ namespace ForApp.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Isbn,Title,Pages,Author,Category,Price,Desc,ImgUrl,StoreId")] Book book)
+        public async Task<IActionResult> Create([Bind("Isbn,Title,Pages,Author,Category,Price,Desc")] Book book, IFormFile image)
         {
-            if (ModelState.IsValid)
+            if (image != null)
             {
-                _context.Add(book);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                string imgName = book.Isbn + Path.GetExtension(image.FileName);
+                string savePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/image", imgName);
+                using (var stream = new FileStream(savePath, FileMode.Create))
+                {
+                    image.CopyTo(stream);
+                }
+                book.ImgUrl = "image/" + imgName;
+
+                var thisUserId = _userManager.GetUserId(HttpContext.User);
+                Store thisStore = await _context.Store.FirstOrDefaultAsync(s => s.UId == thisUserId);
+                book.StoreId = thisStore.Id;
             }
-            ViewData["StoreId"] = new SelectList(_context.Store, "Id", "Id", book.StoreId);
-            return View(book);
+            else
+            {
+                return View(book);
+            }
+            _context.Add(book);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: Books/Edit/5
-        public async Task<IActionResult> Edit(string id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var book = await _context.Book.FindAsync(id);
-            if (book == null)
-            {
-                return NotFound();
-            }
-            ViewData["StoreId"] = new SelectList(_context.Store, "Id", "Id", book.StoreId);
-            return View(book);
-        }
 
         // POST: Books/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.

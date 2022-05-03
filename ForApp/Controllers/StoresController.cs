@@ -8,16 +8,21 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ForApp.Data;
 using ForApp.Models;
+using Microsoft.AspNetCore.Identity;
+using ForApp.Areas.Identity.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ForApp.Controllers
 {
     public class StoresController : Controller
     {
         private readonly UserContext _context;
+        private readonly UserManager<AppUser> _userManager;
 
-        public StoresController(UserContext context)
+        public StoresController(UserContext context, UserManager<AppUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Stores
@@ -56,18 +61,15 @@ namespace ForApp.Controllers
         // POST: Stores/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Authorize(Roles = "Seller")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Address,Slogan,UId")] Store store)
+        public async Task<IActionResult> Create([Bind("ID,Name,Address,Slogan,UId")] Store store)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(store);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["UId"] = new SelectList(_context.Users, "Id", "Id", store.UId);
-            return View(store);
+            var thisUserId = _userManager.GetUserId(HttpContext.User);
+                    _context.Add(store);
+                    await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Stores/Edit/5
