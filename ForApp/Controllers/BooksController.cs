@@ -29,10 +29,26 @@ namespace ForApp.Controllers
 
         // GET: Books
         [Authorize(Roles = "Seller")]
-        public async Task<IActionResult> List()
+        public async Task<IActionResult> List(string sortOrder)
         {
+            ViewData["TitleSortParm"] = String.IsNullOrEmpty(sortOrder) ? "title_desc" : "";
+            ViewData["PriceSortParm"] = sortOrder == "Price" ? "price_desc" : "Price";
             var userContext = _context.Book.Include(b => b.Store);
-            return View(await userContext.ToListAsync());
+            var userContexts = from s in _context.Book
+                           select s;
+            switch (sortOrder)
+            {
+                case "title_desc":
+                    userContexts = userContexts.OrderByDescending(s => s.Title);
+                    break;
+                case "Price":
+                    userContexts = userContexts.OrderByDescending(s => s.Price);
+                    break;
+                default:
+                    userContexts = userContexts.OrderBy(s => s.Title);
+                    break;
+            }
+            return View(await userContexts.AsNoTracking().ToListAsync());;
         }
         public async Task<IActionResult> Index(int id = 0)
         {
