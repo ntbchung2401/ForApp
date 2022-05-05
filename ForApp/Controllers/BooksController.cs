@@ -29,26 +29,30 @@ namespace ForApp.Controllers
 
         // GET: Books
         [Authorize(Roles = "Seller")]
-        public async Task<IActionResult> List(string sortOrder)
+        public async Task<IActionResult> List(string sortOrder, string searchString)
         {
             ViewData["TitleSortParm"] = String.IsNullOrEmpty(sortOrder) ? "title_desc" : "";
             ViewData["PriceSortParm"] = sortOrder == "Price" ? "price_desc" : "Price";
-            var userContext = _context.Book.Include(b => b.Store);
-            var userContexts = from s in _context.Book
-                           select s;
+            ViewData["CurrentFilter"] = searchString;
+            var userContext = from s in _context.Book.Include(b => b.Store)
+                               select s;
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                userContext = userContext.Where(s => s.Title.Contains(searchString));
+            }
             switch (sortOrder)
             {
                 case "title_desc":
-                    userContexts = userContexts.OrderByDescending(s => s.Title);
+                    userContext = userContext.OrderByDescending(s => s.Title);
                     break;
                 case "Price":
-                    userContexts = userContexts.OrderByDescending(s => s.Price);
+                    userContext = userContext.OrderByDescending(s => s.Price);
                     break;
                 default:
-                    userContexts = userContexts.OrderBy(s => s.Title);
+                    userContext = userContext.OrderBy(s => s.Title);
                     break;
             }
-            return View(await userContexts.AsNoTracking().ToListAsync());;
+            return View(await userContext.AsNoTracking().ToListAsync());;
         }
         public async Task<IActionResult> Index(int id = 0)
         {
