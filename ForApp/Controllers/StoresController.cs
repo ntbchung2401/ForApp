@@ -61,14 +61,15 @@ namespace ForApp.Controllers
         // POST: Stores/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [Authorize(Roles = "Seller")]
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Seller")]
         public async Task<IActionResult> Create([Bind("ID,Name,Address,Slogan,UId")] Store store)
         {
             var thisUserId = _userManager.GetUserId(HttpContext.User);
-                    _context.Add(store);
-                    await _context.SaveChangesAsync();
+            _context.Add(store);
+            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 

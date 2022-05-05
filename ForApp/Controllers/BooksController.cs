@@ -10,6 +10,7 @@ using ForApp.Data;
 using ForApp.Models;
 using Microsoft.AspNetCore.Identity;
 using ForApp.Areas.Identity.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ForApp.Controllers
 {
@@ -17,6 +18,7 @@ namespace ForApp.Controllers
     {
         private readonly UserContext _context;
         private readonly UserManager<AppUser> _userManager;
+        private readonly int _recordsPerPage = 3;
 
         public BooksController(UserContext context, UserManager<AppUser> userManager)
         {
@@ -26,12 +28,26 @@ namespace ForApp.Controllers
 
 
         // GET: Books
-        public async Task<IActionResult> Index()
+        [Authorize(Roles = "Seller")]
+        public async Task<IActionResult> List()
         {
             var userContext = _context.Book.Include(b => b.Store);
             return View(await userContext.ToListAsync());
         }
-
+        public async Task<IActionResult> Index(int id = 0)
+        {
+            var userContext = _context.Book.Include(b => b.Store);
+            int numberOfRecords = await _context.Book.CountAsync();     //Count SQL
+            int numberOfPages = (int)Math.Ceiling((double)numberOfRecords / _recordsPerPage);
+            ViewBag.numberOfPages = numberOfPages;
+            ViewBag.currentPage = id;
+            List<Book> books = await _context.Book
+              .Skip(id * _recordsPerPage)  //Offset SQL
+              .Take(_recordsPerPage)       //Top SQL
+              .ToListAsync();
+            return View(books);
+            /*return View(await userContext.ToListAsync());*/
+        }
         // GET: Books/Details/5
         public async Task<IActionResult> Details(string id)
         {
@@ -61,8 +77,10 @@ namespace ForApp.Controllers
         // POST: Books/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Seller")]
         public async Task<IActionResult> Create([Bind("Isbn,Title,Pages,Author,Category,Price,Desc")] Book book, IFormFile image)
         {
             if (image != null)

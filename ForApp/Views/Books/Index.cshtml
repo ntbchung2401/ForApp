@@ -1,75 +1,39 @@
-﻿@model IEnumerable<ForApp.Models.Book>
+﻿@model List<ForApp.Models.Book>
 
-@{
-    ViewData["Title"] = "Index";
-}
+  @{
+      ViewData["Title"] = "Index";
+  }
 
-<h1>Index</h1>
+  <h1>List</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Title)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Pages)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Author)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Category)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Price)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Desc)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ImgUrl)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Store)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Title)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Pages)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Author)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Category)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Price)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Desc)
-            </td>
-            <td> <img src="@("~/image/" + item.ImgUrl)" asp-append-version="true" width="150px" height="150px"> </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Store.Id)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Isbn">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Isbn">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Isbn">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+  <div class="container">
+      <div class="row">
+          @for (var i = 0; i < @Model.Count; i++)
+          {
+              <div class="col-md-4 col-6">
+                  <div class="card" style="width: 18rem;">
+                      <img src="" class="card-img-top" alt="...">
+                      <div class="card-body">
+                          <h5 class="card-title">@Model[i].Title</h5>
+                          <a href="#" class="btn btn-primary">@Model[i].Title</a>
+                          <a asp-action="AddToCart" asp-route-isbn="@Model[i].Isbn" class="btn btn-primary">Add to cart</a>
+                      </div>
+                  </div>
+              </div>
+          }
+      </div>
+  </div>
+  <div style="display:flex;text-align:center;justify-content:center">
+      <nav aria-label="Page navigation example">
+          <ul class="pagination">
+              @for (var i = 0; i < @ViewBag.numberOfPages; i++)
+              {
+                  var style = (ViewBag.currentPage == @i) ? "active" : "";
+                  <li class="page-item @style">
+                      <a class="page-link" asp-route-id="@i">@(i+1)</a>
+                  </li>
+              }
+          </ul>
+      </nav>
+  </div>
+
