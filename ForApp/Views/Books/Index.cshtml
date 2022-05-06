@@ -15,7 +15,7 @@
                       <img src="" class="card-img-top" alt="...">
                       <div class="card-body">
                           <h5 class="card-title">@Model[i].Title</h5>
-                          <a href="#" class="btn btn-primary">@Model[i].Title</a>
+                          <a asp-action="Detail" asp-route-isbn="@Model[i].Isbn" class="btn btn-primary">Details</a>
                           <a asp-action="AddToCart" asp-route-isbn="@Model[i].Isbn" class="btn btn-primary">Add to cart</a>
                       </div>
                   </div>

@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<ForApp.Models.Book>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "List";
 }
 
 <h1>Index</h1>
@@ -71,7 +71,7 @@
             <td>
                 @Html.DisplayFor(modelItem => item.Desc)
             </td>
-            <td> <img src="@("~/image/" + item.ImgUrl)" asp-append-version="true" width="150px" height="150px"> </td>
+            <td> <img src="@("~/images/" + item.ImgUrl)" asp-append-version="true" width="150px" height="150px"> </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Store.Id)
             </td>
