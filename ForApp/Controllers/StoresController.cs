@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace ForApp.Controllers
 {
+    [Authorize(Roles = "Seller")]
     public class StoresController : Controller
     {
         private readonly UserContext _context;
@@ -64,7 +65,6 @@ namespace ForApp.Controllers
         
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Seller")]
         public async Task<IActionResult> Create([Bind("ID,Name,Address,Slogan,UId")] Store store)
         {
             var thisUserId = _userManager.GetUserId(HttpContext.User);
@@ -76,6 +76,7 @@ namespace ForApp.Controllers
         // GET: Stores/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
+            var thisUserId = _userManager.GetUserId(HttpContext.User);
             if (id == null)
             {
                 return NotFound();

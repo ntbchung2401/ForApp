@@ -11,6 +11,7 @@ namespace ForApp.Models
         public string Author { get; set; }
         public string Category { get; set; }
         public double Price { get; set; }
+        [Display(Name = "Description")]
         public string Desc { get; set; }
         public string ImgUrl { get; set; }
         public int StoreId { get; set; }

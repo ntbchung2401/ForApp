@@ -4,17 +4,17 @@
     ViewData["Title"] = "List";
 }
 
-<h1>Index</h1>
+<h1>Lisk of Books in Store</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create">Upload New Book</a>
 </p>
 <form asp-action="List" method="get">
     <div class="form-actions no-color">
         <p>
-            Find by name: <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" />
+            Find by Title: <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" />
             <input type="submit" value="Search" class="btn btn-danger" /> |
-            <a asp-action="List">Back to Full List</a>
+            <a asp-action="List">Clear Searching</a>
         </p>
     </div>
 </form>

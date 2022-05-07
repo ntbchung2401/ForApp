@@ -253,7 +253,7 @@ namespace ForApp.Controllers
                     Console.WriteLine("Error occurred in Checkout" + ex);
                 }
             }
-            return RedirectToAction("Index", "Carts");
+            return RedirectToAction("Index", "Orders");
         }
 
     }

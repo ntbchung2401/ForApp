@@ -31,22 +31,6 @@ namespace ForApp.Controllers
         {
             return View();
         }
-
-        /*public IActionResult SendMail()
-        {
-            var email = new MimeMessage();
-            email.From.Add(MailboxAddress.Parse("from_address@example.com"));
-            email.To.Add(MailboxAddress.Parse("chungntbgcd201567@fpt.edu.vn"));
-            email.Subject = "Test Email Subject"; //tieu de email
-            email.Body = new TextPart(TextFormat.Plain) { Text = "Example Plain Text Message Body" };
-
-            using var smtp = new SmtpClient();
-            smtp.Connect("smtp.ethereal.email", 587, SecureSocketOptions.StartTls);
-            smtp.Authenticate("alexander.kshlerin14@ethereal.email", "tw5sPv9h7eTCeR64hn");
-            smtp.Send(email);
-            smtp.Disconnect(true);
-            return NoContent();
-        }*/
         public async Task<IActionResult> Privacy()
         {
             await _emailSender.SendEmailAsync("chungntbgcd201567@fpt.edu.vn", "test send mail", "just test");
