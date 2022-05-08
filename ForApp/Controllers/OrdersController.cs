@@ -8,16 +8,20 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ForApp.Data;
 using ForApp.Models;
+using Microsoft.AspNetCore.Identity;
+using ForApp.Areas.Identity.Data;
 
 namespace ForApp.Controllers
 {
     public class OrdersController : Controller
     {
         private readonly UserContext _context;
+        private readonly UserManager<AppUser> _userManager;
 
-        public OrdersController(UserContext context)
+        public OrdersController(UserContext context, UserManager<AppUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Orders
@@ -26,7 +30,12 @@ namespace ForApp.Controllers
             var userContext = _context.Order.Include(o => o.User);
             return View(await userContext.ToListAsync());
         }
-
+        public async Task<IActionResult> OrderHistory()
+        {
+            var userContext = _context.Order.Include(o => o.User);
+            string thisUserId = _userManager.GetUserId(HttpContext.User);
+            return View(_context.Order.Where(c => c.UId == thisUserId));
+        }
         // GET: Orders/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -45,7 +54,6 @@ namespace ForApp.Controllers
 
             return View(order);
         }
-
         // GET: Orders/Create
         public IActionResult Create()
         {

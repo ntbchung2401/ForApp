@@ -13,6 +13,12 @@
         <form asp-action="Edit" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Isbn" />
+            <input type="hidden" asp-for="Store" />
+            <div class="form-group">
+                <label asp-for="Title" class="control-label"></label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
             <div class="form-group">
                 <label asp-for="Pages" class="control-label"></label>
                 <input asp-for="Pages" class="form-control" />
@@ -38,7 +44,7 @@
                 <input asp-for="Desc" class="form-control" />
                 <span asp-validation-for="Desc" class="text-danger"></span>
             </div>
-            			<div class="form-group">
+            <div class="form-group">
 				<label class="control-label">Image</label>
 				<input type="file" class="form-control" name="image" />
 			</div>
@@ -55,7 +61,7 @@
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="List">Back to List</a>
 </div>
 
 @section Scripts {

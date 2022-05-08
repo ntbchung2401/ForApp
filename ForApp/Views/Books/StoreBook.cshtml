@@ -9,20 +9,11 @@
 <p>
     <a asp-action="Create">Upload New Book</a>
 </p>
-<form asp-action="List" method="get">
-    <div class="form-actions no-color">
-        <p>
-            Find by Title: <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" />
-            <input type="submit" value="Search" class="btn btn-danger" /> |
-            <a asp-action="List">Clear Searching</a>
-        </p>
-    </div>
-</form>
 <table class="table">
     <thead>
         <tr>
             <th>
-                  <a asp-action="List" asp-route-sortOrder="@ViewData["TitleSortParm"]">@Html.DisplayNameFor(model => model.Title)</a>
+                  @Html.DisplayNameFor(model => model.Title)
               </th>
 
             <th>
@@ -35,7 +26,7 @@
                 @Html.DisplayNameFor(model => model.Category)
             </th>
             <th>
-                  <a asp-action="List" asp-route-sortOrder="@ViewData["PriceSortParm"]">@Html.DisplayNameFor(model => model.Price)</a>
+                @Html.DisplayNameFor(model => model.Price)
               </th>
 
             <th>

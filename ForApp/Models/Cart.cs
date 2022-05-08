@@ -7,7 +7,7 @@ namespace ForApp.Models
         public string UId { get; set; }
         public string BookIsbn { get; set; }
         public AppUser? User { get; set; }
-        public Book? Book { get; set; }
+        public Book Book { get; set; }
     }
 
 }

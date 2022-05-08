@@ -11,6 +11,7 @@ namespace ForApp.Models
         public string Name { get; set; }
         public string Address { get; set; }
         public string Slogan { get; set; }
+        [Display(Name = "StoreID")]
         public string UId { get; set; }
         public AppUser User { get; set; }
         public virtual ICollection<Book>? Books { get; set; }

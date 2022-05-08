@@ -32,6 +32,11 @@ namespace ForApp.Controllers
             var userContext = _context.Store.Include(s => s.User);
             return View(await userContext.ToListAsync());
         }
+        public async Task<IActionResult> YourStore()
+        {
+            string thisUserId = _userManager.GetUserId(HttpContext.User);
+            return View(_context.Store.Where(c => c.UId == thisUserId));
+        }
 
         // GET: Stores/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -67,7 +72,9 @@ namespace ForApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("ID,Name,Address,Slogan,UId")] Store store)
         {
-            var thisUserId = _userManager.GetUserId(HttpContext.User);
+            /*string thisUserId = _userManager.GetUserId(HttpContext.User);
+            Store thisStore = await _context.Store.FirstOrDefaultAsync(s => s.UId == thisUserId);
+            store.UId = thisStore.UId;*/
             _context.Add(store);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

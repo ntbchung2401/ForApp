@@ -54,6 +54,13 @@ namespace ForApp.Controllers
             }
             return View(await userContext.AsNoTracking().ToListAsync());;
         }
+        public async Task<IActionResult> StoreBook(Book book)
+        {
+            var thisUserId = _userManager.GetUserId(HttpContext.User);
+            Store thisStore = await _context.Store.FirstOrDefaultAsync(s => s.UId == thisUserId);
+            book.StoreId = thisStore.Id;
+            return View(_context.Book.Where(c => c.StoreId == book.StoreId));
+        }
         public async Task<IActionResult> Index(int id = 0)
         {
             var userContext = _context.Book.Include(b => b.Store);
@@ -61,6 +68,7 @@ namespace ForApp.Controllers
             int numberOfPages = (int)Math.Ceiling((double)numberOfRecords / _recordsPerPage);
             ViewBag.numberOfPages = numberOfPages;
             ViewBag.currentPage = id;
+            
             List<Book> books = await _context.Book
               .Skip(id * _recordsPerPage)  //Offset SQL
               .Take(_recordsPerPage)       //Top SQL
@@ -106,7 +114,7 @@ namespace ForApp.Controllers
             if (image != null)
             {
                 string imgName = book.Isbn + Path.GetExtension(image.FileName);
-                string savePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/image", imgName);
+                string savePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", imgName);
                 using (var stream = new FileStream(savePath, FileMode.Create))
                 {
                     image.CopyTo(stream);
@@ -125,7 +133,22 @@ namespace ForApp.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+        // GET: Books/Edit/5
+        public async Task<IActionResult> Edit(string id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
 
+            var book = await _context.Book.FindAsync(id);
+            if (book == null)
+            {
+                return NotFound();
+            }
+            ViewData["StoreId"] = new SelectList(_context.Store, "Id", "Id", book.StoreId);
+            return View(book);
+        }
 
         // POST: Books/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
@@ -162,6 +185,56 @@ namespace ForApp.Controllers
             ViewData["StoreId"] = new SelectList(_context.Store, "Id", "Id", book.StoreId);
             return View(book);
         }
+        /*        [HttpPost]
+                [ValidateAntiForgeryToken]
+                public async Task<IActionResult> Edit(string id, [Bind("Isbn,Title,Pages,Author,Category,Price,Desc,ImgUrl")] Book book)
+                {
+                    var thisUserId = _userManager.GetUserId(HttpContext.User);
+                    Store thisStore = await _context.Store.FirstOrDefaultAsync(s => s.UId == thisUserId);
+                    book.StoreId = thisStore.Id;
+                    ViewData["StoreId"] = new SelectList(_context.Store, "Id", "Id", book.StoreId);
+                    if (id != book.Isbn)
+                    {
+                        return NotFound();
+                    }
+
+                    if (ModelState.IsValid)
+                    {
+                        var bookToUpdate = await _context.Book.FirstOrDefaultAsync(s => s.Isbn == id);
+                        if (bookToUpdate == null)
+                        {
+                            return NotFound();
+                        }
+                        bookToUpdate.Isbn = book.Isbn;
+                        bookToUpdate.Title = book.Title;
+                        bookToUpdate.Pages = book.Pages;
+                        bookToUpdate.Author = book.Author;
+                        bookToUpdate.Category = book.Category;
+                        bookToUpdate.Price = book.Price;
+                        bookToUpdate.Desc = book.Desc;
+                        bookToUpdate.ImgUrl = book.ImgUrl;
+                        bookToUpdate.Store = book.Store;
+                        try
+                        {
+                            _context.Update(bookToUpdate);
+                            await _context.SaveChangesAsync();
+                        }
+                        catch (DbUpdateConcurrencyException ex)
+                        {
+                            if (!BookExists(book.Isbn))
+                            {
+                                return NotFound();
+                            }
+                            else
+                            {
+                                throw;
+                            }
+                            ModelState.AddModelError("", "Unable to update the change. Error is: " + ex.Message);
+                        }
+                        return RedirectToAction(nameof(Index));
+                    }
+                    return View(book);
+                }*/
         // GET: Books/Delete/5
         public async Task<IActionResult> Delete(string id)
         {
@@ -186,10 +259,26 @@ namespace ForApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
-            var book = await _context.Book.FindAsync(id);
+            /*var book = await _context.Book.FindAsync(id);
             _context.Book.Remove(book);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index));*/
+            var book = await _context.Book.FindAsync(id);
+            if (book == null)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+            try
+            {
+                _context.Book.Remove(book);  //Delete
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            catch (DbUpdateException ex)
+            {
+                ModelState.AddModelError("", "Unable to delete book " + id + ". Error is: " + ex.Message);
+                return NotFound();
+            }
         }
 
         private bool BookExists(string id)
@@ -253,7 +342,7 @@ namespace ForApp.Controllers
                     Console.WriteLine("Error occurred in Checkout" + ex);
                 }
             }
-            return RedirectToAction("Index", "Orders");
+            return RedirectToAction("OrderHistory", "Orders");
         }
 
     }

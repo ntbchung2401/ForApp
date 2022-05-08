@@ -4,7 +4,7 @@
     ViewData["Title"] = "Order History";
 }
 
-<h1>Order History for Seller</h1>
+<h1>Order History for Customer</h1>
 
 <table class="table">
     <thead>
@@ -16,10 +16,7 @@
                 @Html.DisplayNameFor(model => model.Total)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.User.UserName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.User.Address)
+                @Html.DisplayNameFor(model => model.User)
             </th>
             <th></th>
         </tr>
@@ -34,10 +31,7 @@
                 @Html.DisplayFor(modelItem => item.Total)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.User.UserName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.User.Address)
+                @Html.DisplayFor(modelItem => item.User.Id)
             </td>
             <td>
                 <a asp-action="Details" asp-route-id="@item.Id">Details</a> |

@@ -4,11 +4,20 @@
     ViewData["Title"] = "Store";
 }
 
-<h1>List Store</h1>
+<h1>Your Store</h1>
 
-    <a asp-action="YourStore">Back to your Store</a>
+<p>
+    <a asp-action="Create">Create New Store</a>
 </p>
-
+<p>
+    <a asp-action="Index">View List Store</a>
+</p>
+<p>
+    <a asp-controller="Orders" asp-action="Index">List Order of your Store</a>
+</p>
+<p>
+    <a asp-controller="Books" asp-action="StoreBook">List Books of your Store</a>
+</p>
 <table class="table">
     <thead>
         <tr>
@@ -20,9 +29,6 @@
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Slogan)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.User)
             </th>
             <th></th>
         </tr>
@@ -40,7 +46,9 @@
                 @Html.DisplayFor(modelItem => item.Slogan)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.User.Id)
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
             </td>
         </tr>
 }

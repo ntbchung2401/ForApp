@@ -7,6 +7,7 @@ namespace ForApp.Models
     public class Order
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Display(Name = "OrderID")]
         public int Id { get; set; }
         public string UId { get; set; }
         public DateTime OrderDate { get; set; }
