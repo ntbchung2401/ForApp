@@ -26,6 +26,11 @@ namespace ForApp.Controllers
             var orderContext = _context.OrderDetail.Include(o => o.Book).Include(o => o.Order);
             return View(await orderContext.ToListAsync());
         }
+        public async Task<IActionResult> Detail(int id)
+        {
+            var orderContexts = _context.OrderDetail.Where(c => c.OrderId == id).Include(o => o.Book).Include(o => o.Order);
+            return View(await orderContexts.ToListAsync());
+        }
         private bool OrderDetailExists(int id)
         {
             return _context.OrderDetail.Any(e => e.OrderId == id);

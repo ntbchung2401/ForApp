@@ -3,6 +3,7 @@ using ForApp.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ForApp.Data;
 
@@ -56,7 +57,14 @@ public class UserContext : IdentityDbContext<AppUser>
             .WithMany(b => b.Carts)
             .HasForeignKey(od => od.BookIsbn)
             .OnDelete(DeleteBehavior.NoAction);
-
+        builder.ApplyConfiguration(new ApplicationUserEntityConfiguration());
     }
 }
 
+internal class ApplicationUserEntityConfiguration : IEntityTypeConfiguration<AppUser>
+{
+    public void Configure(EntityTypeBuilder<AppUser> builder)
+    {
+        builder.Property(u => u.Address).HasMaxLength(255);
+    }
+}

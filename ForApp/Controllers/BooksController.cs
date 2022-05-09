@@ -114,12 +114,12 @@ namespace ForApp.Controllers
             if (image != null)
             {
                 string imgName = book.Isbn + Path.GetExtension(image.FileName);
-                string savePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", imgName);
+                string savePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/img", imgName);
                 using (var stream = new FileStream(savePath, FileMode.Create))
                 {
                     image.CopyTo(stream);
                 }
-                book.ImgUrl = "images/" + imgName;
+                book.ImgUrl = "img/" + imgName;
 
                 var thisUserId = _userManager.GetUserId(HttpContext.User);
                 Store thisStore = await _context.Store.FirstOrDefaultAsync(s => s.UId == thisUserId);
@@ -245,6 +245,8 @@ namespace ForApp.Controllers
 
             var book = await _context.Book
                 .Include(b => b.Store)
+                .Include(b => b.OrderDetails)
+                .Include(b => b.Carts)
                 .FirstOrDefaultAsync(m => m.Isbn == id);
             if (book == null)
             {

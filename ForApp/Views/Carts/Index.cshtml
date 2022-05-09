@@ -16,10 +16,10 @@
 				@Html.DisplayNameFor(model => model.UId)
 			</th>
 			<th>
-				@Html.DisplayNameFor(model => model.BookIsbn)
+				Quantity
 			</th>
 			<th>
-				@Html.DisplayNameFor(model => model.Book.Title)
+				@Html.DisplayNameFor(model => model.BookIsbn)
 			</th>
 			<th></th>
 		</tr>
@@ -32,10 +32,23 @@
 					@Html.DisplayFor(modelItem => item.UId)
 				</td>
 				<td>
-					@Html.DisplayFor(modelItem => item.BookIsbn)
+					<div class="d-flex flex-row">
+                    <button class="btn btn-link px-2"
+                      onclick="this.parentNode.querySelector('input[type=number]').stepDown()">
+                      <i class="fas fa-minus"></i>
+                    </button>
+
+                    <input id="form1" min="0" name="quantity" value="1" type="number"
+                      class="form-control form-control-sm" style="width: 50px;" />
+
+                    <button class="btn btn-link px-2"
+                      onclick="this.parentNode.querySelector('input[type=number]').stepUp()">
+                      <i class="fas fa-plus"></i>
+                    </button>
+                  </div>
 				</td>
 				<td>
-					@Html.DisplayFor(modelItem => item.Book.Title)
+					@Html.DisplayFor(modelItem => item.BookIsbn)
 				</td>
 			</tr>
 		}
