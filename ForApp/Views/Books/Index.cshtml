@@ -4,7 +4,17 @@
       ViewData["Title"] = "Index";
   }
 
-  <h1>List</h1>
+  <h1>List of Book</h1>
+
+  <form asp-action="Index" method="get">
+    <div class="form-actions no-color">
+        <p>
+            Find by Title: <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" />
+            <input type="submit" value="Search" class="btn btn-danger" /> |
+            <a asp-action="Index">Clear Searching</a>
+        </p>
+    </div>
+</form>
 
   <div class="container">
       <div class="row">
@@ -15,6 +25,7 @@
                       <img src="~/img/55787.jpg" class="card-img-top" alt="...">
                       <div class="card-body">
                           <h5 class="card-title">@Model[i].Title</h5>
+                          <h5 class="card-title">@Model[i].Price VND</h5>
                           <a asp-action="Details" asp-route-id="@Model[i].Isbn" class="btn btn-primary">Details</a>
                           <a asp-action="AddToCart" asp-route-isbn="@Model[i].Isbn" class="btn btn-primary">Add to cart</a>
                       </div>

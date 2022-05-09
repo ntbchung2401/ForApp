@@ -18,7 +18,7 @@ namespace ForApp.Controllers
     {
         private readonly UserContext _context;
         private readonly UserManager<AppUser> _userManager;
-        private readonly int _recordsPerPage = 3;
+        private readonly int _recordsPerPage = 9;
 
         public BooksController(UserContext context, UserManager<AppUser> userManager)
         {
@@ -61,17 +61,23 @@ namespace ForApp.Controllers
             book.StoreId = thisStore.Id;
             return View(_context.Book.Where(c => c.StoreId == book.StoreId));
         }
-        public async Task<IActionResult> Index(int id = 0)
+        public async Task<IActionResult> Index(string searchString,int id = 0)
         {
-            var userContext = _context.Book.Include(b => b.Store);
+            var userContext = from s in _context.Book.Include(b => b.Store)
+                              select s; ;
             int numberOfRecords = await _context.Book.CountAsync();     //Count SQL
             int numberOfPages = (int)Math.Ceiling((double)numberOfRecords / _recordsPerPage);
             ViewBag.numberOfPages = numberOfPages;
             ViewBag.currentPage = id;
-            
+            ViewData["CurrentFilter"] = searchString;
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                userContext = userContext.Where(s => s.Title.Contains(searchString));
+                return View(await userContext.AsNoTracking().ToListAsync());
+            }
             List<Book> books = await _context.Book
               .Skip(id * _recordsPerPage)  //Offset SQL
-              .Take(_recordsPerPage)       //Top SQL
+              .Take(_recordsPerPage)//Top SQL
               .ToListAsync();
             return View(books);
             /*return View(await userContext.ToListAsync());*/
@@ -146,7 +152,7 @@ namespace ForApp.Controllers
             {
                 return NotFound();
             }
-            ViewData["StoreId"] = new SelectList(_context.Store, "Id", "Id", book.StoreId);
+
             return View(book);
         }
 
@@ -155,7 +161,7 @@ namespace ForApp.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("Isbn,Title,Pages,Author,Category,Price,Desc,ImgUrl,StoreId")] Book book)
+        public async Task<IActionResult> Edit(string id, [Bind("Isbn,Title,Pages,Author,Category,Price,Desc,ImgUrl")] Book book)
         {
             if (id != book.Isbn)
             {
@@ -166,6 +172,10 @@ namespace ForApp.Controllers
             {
                 try
                 {
+                    AppUser thisUser = await _userManager.GetUserAsync(HttpContext.User);
+                    Store thisStore = await _context.Store.FirstOrDefaultAsync(s => s.UId == thisUser.Id);
+                    // lay id tu current user
+                    book.StoreId = thisStore.Id;
                     _context.Update(book);
                     await _context.SaveChangesAsync();
                 }
@@ -180,61 +190,11 @@ namespace ForApp.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("StoreBook", "Books");
             }
-            ViewData["StoreId"] = new SelectList(_context.Store, "Id", "Id", book.StoreId);
+
             return View(book);
         }
-        /*        [HttpPost]
-                [ValidateAntiForgeryToken]
-                public async Task<IActionResult> Edit(string id, [Bind("Isbn,Title,Pages,Author,Category,Price,Desc,ImgUrl")] Book book)
-                {
-                    var thisUserId = _userManager.GetUserId(HttpContext.User);
-                    Store thisStore = await _context.Store.FirstOrDefaultAsync(s => s.UId == thisUserId);
-                    book.StoreId = thisStore.Id;
-                    ViewData["StoreId"] = new SelectList(_context.Store, "Id", "Id", book.StoreId);
-                    if (id != book.Isbn)
-                    {
-                        return NotFound();
-                    }
-
-                    if (ModelState.IsValid)
-                    {
-                        var bookToUpdate = await _context.Book.FirstOrDefaultAsync(s => s.Isbn == id);
-                        if (bookToUpdate == null)
-                        {
-                            return NotFound();
-                        }
-                        bookToUpdate.Isbn = book.Isbn;
-                        bookToUpdate.Title = book.Title;
-                        bookToUpdate.Pages = book.Pages;
-                        bookToUpdate.Author = book.Author;
-                        bookToUpdate.Category = book.Category;
-                        bookToUpdate.Price = book.Price;
-                        bookToUpdate.Desc = book.Desc;
-                        bookToUpdate.ImgUrl = book.ImgUrl;
-                        bookToUpdate.Store = book.Store;
-                        try
-                        {
-                            _context.Update(bookToUpdate);
-                            await _context.SaveChangesAsync();
-                        }
-                        catch (DbUpdateConcurrencyException ex)
-                        {
-                            if (!BookExists(book.Isbn))
-                            {
-                                return NotFound();
-                            }
-                            else
-                            {
-                                throw;
-                            }
-                            ModelState.AddModelError("", "Unable to update the change. Error is: " + ex.Message);
-                        }
-                        return RedirectToAction(nameof(Index));
-                    }
-                    return View(book);
-                }*/
         // GET: Books/Delete/5
         public async Task<IActionResult> Delete(string id)
         {
@@ -245,8 +205,6 @@ namespace ForApp.Controllers
 
             var book = await _context.Book
                 .Include(b => b.Store)
-                .Include(b => b.OrderDetails)
-                .Include(b => b.Carts)
                 .FirstOrDefaultAsync(m => m.Isbn == id);
             if (book == null)
             {
@@ -261,26 +219,10 @@ namespace ForApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
-            /*var book = await _context.Book.FindAsync(id);
+            var book = await _context.Book.FindAsync(id);
             _context.Book.Remove(book);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));*/
-            var book = await _context.Book.FindAsync(id);
-            if (book == null)
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            try
-            {
-                _context.Book.Remove(book);  //Delete
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            catch (DbUpdateException ex)
-            {
-                ModelState.AddModelError("", "Unable to delete book " + id + ". Error is: " + ex.Message);
-                return NotFound();
-            }
+            return RedirectToAction("StoreBook", "Books");
         }
 
         private bool BookExists(string id)
@@ -290,7 +232,7 @@ namespace ForApp.Controllers
         public async Task<IActionResult> AddToCart(string isbn)
         {
             string thisUserId = _userManager.GetUserId(HttpContext.User);
-            Cart myCart = new Cart() { UId = thisUserId, BookIsbn = isbn };
+            Cart myCart = new Cart() { UId = thisUserId, BookIsbn = isbn};
             Cart fromDb = _context.Cart.FirstOrDefault(c => c.UId == thisUserId && c.BookIsbn == isbn);
             //if not existing (or null), add it to cart. If already added to Cart before, ignore it.
             if (fromDb == null)

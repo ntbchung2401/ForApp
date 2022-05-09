@@ -27,9 +27,10 @@ namespace ForApp.Controllers
         // GET: Orders
         public async Task<IActionResult> Index()
         {
-            var userContext = _context.Order.Include(o => o.User);
-            return View(await userContext.ToListAsync());
+            var orderContext = _context.Order.Include(o => o.User);
+            return View(await orderContext.ToListAsync());
         }
+        //order history for customer
         public async Task<IActionResult> OrderHistory()
         {
             var userContext = _context.Order.Include(o => o.User);
