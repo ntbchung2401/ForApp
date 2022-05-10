@@ -40,7 +40,8 @@
 
                     <input id="quantity" min="1" name="quantity" value="" type="number"
                       class="form-control form-control-sm" style="width: 50px;" />
-
+					  @*<input asp-for="Quantity" min="1" class="form-control" />
+					  <span asp-validation-for="Quantity" class="text-danger"></span>*@
                     <button class="btn btn-link px-2"
                       onclick="this.parentNode.querySelector('input[type=number]').stepUp()">
                       <i class="fas fa-plus"></i>

@@ -14,7 +14,7 @@ namespace ForApp.Models
         [Display(Name = "StoreID")]
         public string UId { get; set; }
         [Display(Name = "Manager")]
-        public AppUser User { get; set; }
+        public AppUser? User { get; set; }
         public virtual ICollection<Book>? Books { get; set; }
     }
 

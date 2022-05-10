@@ -18,7 +18,7 @@ namespace ForApp.Controllers
     {
         private readonly UserContext _context;
         private readonly UserManager<AppUser> _userManager;
-        private readonly int _recordsPerPage = 9;
+        private readonly int _recordsPerPage = 4;
 
         public BooksController(UserContext context, UserManager<AppUser> userManager)
         {
@@ -111,8 +111,8 @@ namespace ForApp.Controllers
         // POST: Books/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        
-        [HttpPost]
+
+        /*[HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Seller")]
         public async Task<IActionResult> Create([Bind("Isbn,Title,Pages,Author,Category,Price,Desc")] Book book, IFormFile image)
@@ -126,6 +126,37 @@ namespace ForApp.Controllers
                     image.CopyTo(stream);
                 }
                 book.ImgUrl = "img/" + imgName;
+
+                var thisUserId = _userManager.GetUserId(HttpContext.User);
+                Store thisStore = await _context.Store.FirstOrDefaultAsync(s => s.UId == thisUserId);
+                book.StoreId = thisStore.Id;
+            }
+            else
+            {
+                return View(book);
+            }
+            _context.Add(book);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }*/
+        // POST: Books/Create
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Seller")]
+        public async Task<IActionResult> Create([Bind("Isbn,Title,Pages,Author,Category,Price,Desc")] Book book, IFormFile image)
+        {
+            if (image != null)
+            {
+                string imgName = book.Isbn + Path.GetExtension(image.FileName);
+                string savePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/img", imgName);
+                using (var stream = new FileStream(savePath, FileMode.Create))
+                {
+                    image.CopyTo(stream);
+                }
+                book.ImgUrl = "wwwroot/img/";
 
                 var thisUserId = _userManager.GetUserId(HttpContext.User);
                 Store thisStore = await _context.Store.FirstOrDefaultAsync(s => s.UId == thisUserId);
@@ -161,6 +192,7 @@ namespace ForApp.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Seller")]
         public async Task<IActionResult> Edit(string id, [Bind("Isbn,Title,Pages,Author,Category,Price,Desc,ImgUrl")] Book book)
         {
             if (id != book.Isbn)
@@ -217,6 +249,7 @@ namespace ForApp.Controllers
         // POST: Books/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Seller")]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
             var book = await _context.Book.FindAsync(id);
@@ -229,10 +262,14 @@ namespace ForApp.Controllers
         {
             return _context.Book.Any(e => e.Isbn == id);
         }
+        [Authorize(Roles = "Customer")]
         public async Task<IActionResult> AddToCart(string isbn)
         {
             string thisUserId = _userManager.GetUserId(HttpContext.User);
-            Cart myCart = new Cart() { UId = thisUserId, BookIsbn = isbn};
+            Cart myCart = new Cart() { 
+                UId = thisUserId,
+                BookIsbn = isbn
+            };
             Cart fromDb = _context.Cart.FirstOrDefault(c => c.UId == thisUserId && c.BookIsbn == isbn);
             //if not existing (or null), add it to cart. If already added to Cart before, ignore it.
             if (fromDb == null)
@@ -242,6 +279,7 @@ namespace ForApp.Controllers
             }
             return RedirectToAction("Index");
         }
+        [Authorize(Roles = "Customer")]
         public async Task<IActionResult> Checkout()
         {
             string thisUserId = _userManager.GetUserId(HttpContext.User);

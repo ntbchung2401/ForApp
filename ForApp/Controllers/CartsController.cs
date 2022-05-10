@@ -10,6 +10,7 @@ using ForApp.Data;
 using ForApp.Models;
 using ForApp.Areas.Identity.Data;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ForApp.Controllers
 {
@@ -26,6 +27,7 @@ namespace ForApp.Controllers
 
 
         // GET: Carts
+        [Authorize(Roles = "Customer")]
         public ActionResult Index()
         {
             string thisUserId = _userManager.GetUserId(HttpContext.User);
