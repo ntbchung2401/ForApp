@@ -22,10 +22,11 @@
           {
               <div class="col-md-4 col-6">
                   <div class="card" style="width: 18rem;">
-                      <img src="~/img/55787.jpg" class="card-img-top" alt="...">
+                      <img src="@Model[i].ImgUrl" class="img-thumbnail">
+                      @*<img src="@Model[i].ImgUrl" class="card-img-top">*@
                       <div class="card-body">
                           <h5 class="card-title">@Model[i].Title</h5>
-                          <h5 class="card-title">@Model[i].Price VND</h5>
+                          <h5 class="card-text">@Model[i].Price $</h5>
                           <a asp-action="Details" asp-route-id="@Model[i].Isbn" class="btn btn-primary">Details</a>
                           <a asp-action="AddToCart" asp-route-isbn="@Model[i].Isbn" class="btn btn-primary">Add to cart</a>
                       </div>

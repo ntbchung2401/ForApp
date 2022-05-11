@@ -1,77 +1,91 @@
 ﻿@model IEnumerable<ForApp.Models.Book>
 
 @{
-    ViewData["Title"] = "List";
+	ViewData["Title"] = "StoreBooks";
 }
 
 <h1>Lisk of Books in Store</h1>
-
-<p>
-    <a asp-action="Create">Upload New Book</a>
-</p>
+<ul class="navbar-nav flex-grow-1">
+		<a asp-action="Create">Upload New Book</a>
+		<a asp-controller="Stores" asp-action="YourStore">Back to your Store</a>
+</ul>
+  <form asp-action="StoreBook" method="get">
+    <div class="form-actions no-color">
+        <p>
+            Find by Title: <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" />
+            <input type="submit" value="Search" class="btn btn-danger" /> |
+            <a asp-action="StoreBook">Clear Searching</a>
+        </p>
+    </div>
+</form>
 <table class="table">
-    <thead>
-        <tr>
-            <th>
-                  @Html.DisplayNameFor(model => model.Title)
-              </th>
-
-            <th>
-                @Html.DisplayNameFor(model => model.Pages)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Author)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Category)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Price)
-              </th>
-
-            <th>
-                @Html.DisplayNameFor(model => model.Desc)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ImgUrl)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Store)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Title)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Pages)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Author)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Category)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Price)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Desc)
-            </td>
-            <td> <img src="@("~/img/55787.jpg")" asp-append-version="true" width="150px" height="150px"> </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Store.Id)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Isbn">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Isbn">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Isbn">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
+	<thead>
+		<tr>
+			<th>
+				@Html.DisplayNameFor(model => model.Isbn)
+			</th>
+			<th>
+                  <a asp-action="StoreBook" asp-route-sortOrder="@ViewData["TitleSortParm"]">@Html.DisplayNameFor(model => model.Title)</a>
+			</th>
+			<th>
+				@Html.DisplayNameFor(model => model.Pages)
+			</th>
+			<th>
+				@Html.DisplayNameFor(model => model.Author)
+			</th>
+			<th>
+				@Html.DisplayNameFor(model => model.Category)
+			</th>
+			<th>
+                  <a asp-action="StoreBook" asp-route-sortOrder="@ViewData["PriceSortParm"]">@Html.DisplayNameFor(model => model.Price)</a>
+			</th>
+			<th>
+				@Html.DisplayNameFor(model => model.Desc)
+			</th>
+			<th>
+				@Html.DisplayNameFor(model => model.ImgUrl)
+			</th>
+			<th>
+				@Html.DisplayNameFor(model => model.Store)
+			</th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var item in Model)
+		{
+			<tr>
+				<td>
+					@Html.DisplayFor(modelItem => item.Isbn)
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.Title)
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.Pages)
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.Author)
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.Category)
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.Price)
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.Desc)
+				</td>
+				<td> <img src="@item.ImgUrl" asp-append-version="true" width="150px" height="150px"> </td>
+				<td>
+					@Html.DisplayFor(modelItem => item.Store.Id)
+				</td>
+				<td>
+					<a asp-action="Edit" asp-route-id="@item.Isbn">Edit</a> |
+					<a asp-action="Details" asp-route-id="@item.Isbn">Details</a> |
+					<a asp-action="Delete" asp-route-id="@item.Isbn">Delete</a>
+				</td>
+			</tr>
+		}
+	</tbody>
 </table>

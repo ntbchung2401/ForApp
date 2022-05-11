@@ -18,16 +18,18 @@ namespace ForApp.Controllers
     {
         private readonly UserContext _context;
         private readonly UserManager<AppUser> _userManager;
-        private readonly int _recordsPerPage = 4;
-
-        public BooksController(UserContext context, UserManager<AppUser> userManager)
+        private readonly int _recordsPerPage = 15;
+        private readonly IWebHostEnvironment _webHostEnvironment;
+        public BooksController(UserContext context, UserManager<AppUser> userManager, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
             _userManager = userManager;
+            _webHostEnvironment = webHostEnvironment;
         }
 
 
         // GET: Books
+        //list book we can sort
         [Authorize(Roles = "Seller")]
         public async Task<IActionResult> List(string sortOrder, string searchString)
         {
@@ -35,7 +37,7 @@ namespace ForApp.Controllers
             ViewData["PriceSortParm"] = sortOrder == "Price" ? "price_desc" : "Price";
             ViewData["CurrentFilter"] = searchString;
             var userContext = from s in _context.Book.Include(b => b.Store)
-                               select s;
+                              select s;
             if (!String.IsNullOrEmpty(searchString))
             {
                 userContext = userContext.Where(s => s.Title.Contains(searchString));
@@ -52,16 +54,42 @@ namespace ForApp.Controllers
                     userContext = userContext.OrderBy(s => s.Title);
                     break;
             }
-            return View(await userContext.AsNoTracking().ToListAsync());;
+            return View(await userContext.AsNoTracking().ToListAsync()); ;
         }
-        public async Task<IActionResult> StoreBook(Book book)
+
+
+        // books available in your store
+        public async Task<IActionResult> StoreBook(Book book, string sortOrder, string searchString)
         {
             var thisUserId = _userManager.GetUserId(HttpContext.User);
             Store thisStore = await _context.Store.FirstOrDefaultAsync(s => s.UId == thisUserId);
             book.StoreId = thisStore.Id;
-            return View(_context.Book.Where(c => c.StoreId == book.StoreId));
+            ViewData["TitleSortParm"] = String.IsNullOrEmpty(sortOrder) ? "title_desc" : "";
+            ViewData["PriceSortParm"] = sortOrder == "Price" ? "price_desc" : "Price";
+            ViewData["CurrentFilter"] = searchString;
+            var userContext = from s in _context.Book.Include(b => b.Store)
+                              select s;
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                userContext = userContext.Where(s => s.Title.Contains(searchString));
+                return View(await userContext.AsNoTracking().ToListAsync());
+            }
+            switch (sortOrder)
+            {
+                case "title_desc":
+                    userContext = userContext.OrderByDescending(s => s.Title);
+                    break;
+                case "Price":
+                    userContext = userContext.OrderByDescending(s => s.Price);
+                    break;
+                default:
+                    userContext = userContext.OrderBy(s => s.Title);
+                    break;
+            }
+            return View(await _context.Book.Where(c => c.StoreId == book.StoreId).ToListAsync());
         }
-        public async Task<IActionResult> Index(string searchString,int id = 0)
+        // list book we can add to cart
+        public async Task<IActionResult> Index(string searchString, int id = 0)
         {
             var userContext = from s in _context.Book.Include(b => b.Store)
                               select s; ;
@@ -82,7 +110,10 @@ namespace ForApp.Controllers
             return View(books);
             /*return View(await userContext.ToListAsync());*/
         }
+
+
         // GET: Books/Details/5
+        // see the detail of your book
         public async Task<IActionResult> Details(string id)
         {
             if (id == null)
@@ -112,40 +143,8 @@ namespace ForApp.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
 
-        /*[HttpPost]
-        [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Seller")]
-        public async Task<IActionResult> Create([Bind("Isbn,Title,Pages,Author,Category,Price,Desc")] Book book, IFormFile image)
-        {
-            if (image != null)
-            {
-                string imgName = book.Isbn + Path.GetExtension(image.FileName);
-                string savePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/img", imgName);
-                using (var stream = new FileStream(savePath, FileMode.Create))
-                {
-                    image.CopyTo(stream);
-                }
-                book.ImgUrl = "img/" + imgName;
-
-                var thisUserId = _userManager.GetUserId(HttpContext.User);
-                Store thisStore = await _context.Store.FirstOrDefaultAsync(s => s.UId == thisUserId);
-                book.StoreId = thisStore.Id;
-            }
-            else
-            {
-                return View(book);
-            }
-            _context.Add(book);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }*/
-        // POST: Books/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Seller")]
         public async Task<IActionResult> Create([Bind("Isbn,Title,Pages,Author,Category,Price,Desc")] Book book, IFormFile image)
         {
             if (image != null)
@@ -156,7 +155,7 @@ namespace ForApp.Controllers
                 {
                     image.CopyTo(stream);
                 }
-                book.ImgUrl = "wwwroot/img/";
+                book.ImgUrl = "/img/" + imgName;
 
                 var thisUserId = _userManager.GetUserId(HttpContext.User);
                 Store thisStore = await _context.Store.FirstOrDefaultAsync(s => s.UId == thisUserId);
@@ -170,6 +169,7 @@ namespace ForApp.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
         // GET: Books/Edit/5
         public async Task<IActionResult> Edit(string id)
         {
@@ -193,23 +193,32 @@ namespace ForApp.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Seller")]
-        public async Task<IActionResult> Edit(string id, [Bind("Isbn,Title,Pages,Author,Category,Price,Desc,ImgUrl")] Book book)
+        public async Task<IActionResult> Edit(string id, [Bind("Isbn,Title,Pages,Author,Category,Price,Desc,ImgUrl")] Book book, IFormFile image)
         {
             if (id != book.Isbn)
             {
                 return NotFound();
             }
-
+            var thisUserId = _userManager.GetUserId(HttpContext.User);
+            Store thisStore = await _context.Store.FirstOrDefaultAsync(s => s.UId == thisUserId);
+            book.StoreId = thisStore.Id;
             if (ModelState.IsValid)
             {
                 try
                 {
-                    AppUser thisUser = await _userManager.GetUserAsync(HttpContext.User);
-                    Store thisStore = await _context.Store.FirstOrDefaultAsync(s => s.UId == thisUser.Id);
-                    // lay id tu current user
-                    book.StoreId = thisStore.Id;
-                    _context.Update(book);
-                    await _context.SaveChangesAsync();
+                    {
+                        if (image != null)
+                        {
+                            string imgName = book.Isbn + Path.GetExtension(image.FileName);
+                            string savePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/img", imgName);
+                            using (var stream = new FileStream(savePath, FileMode.Create))
+                            {
+                                image.CopyTo(stream);
+                            }
+                            book.ImgUrl = "/img/" + imgName;
+                        }
+                    }
+
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -222,6 +231,8 @@ namespace ForApp.Controllers
                         throw;
                     }
                 }
+                _context.Update(book);
+                await _context.SaveChangesAsync();
                 return RedirectToAction("StoreBook", "Books");
             }
 
@@ -253,6 +264,7 @@ namespace ForApp.Controllers
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
             var book = await _context.Book.FindAsync(id);
+
             _context.Book.Remove(book);
             await _context.SaveChangesAsync();
             return RedirectToAction("StoreBook", "Books");
@@ -266,10 +278,7 @@ namespace ForApp.Controllers
         public async Task<IActionResult> AddToCart(string isbn)
         {
             string thisUserId = _userManager.GetUserId(HttpContext.User);
-            Cart myCart = new Cart() { 
-                UId = thisUserId,
-                BookIsbn = isbn
-            };
+            Cart myCart = new Cart() { UId = thisUserId, BookIsbn = isbn, Quantity = 1 };
             Cart fromDb = _context.Cart.FirstOrDefault(c => c.UId == thisUserId && c.BookIsbn == isbn);
             //if not existing (or null), add it to cart. If already added to Cart before, ignore it.
             if (fromDb == null)
@@ -278,6 +287,8 @@ namespace ForApp.Controllers
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction("Index");
+
+
         }
         [Authorize(Roles = "Customer")]
         public async Task<IActionResult> Checkout()
@@ -307,7 +318,7 @@ namespace ForApp.Controllers
                         {
                             OrderId = myOrder.Id,
                             BookIsbn = item.BookIsbn,
-                            Quantity = 1
+                            Quantity = item.Quantity,
                         };
                         _context.Add(detail);
                     }
@@ -326,6 +337,5 @@ namespace ForApp.Controllers
             }
             return RedirectToAction("OrderHistory", "Orders");
         }
-
     }
-}
+    }

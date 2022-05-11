@@ -10,6 +10,7 @@ namespace ForApp.Models
         public int Pages { get; set; }
         public string Author { get; set; }
         public string Category { get; set; }
+        [Display(Name = "Price/book")]
         public double Price { get; set; }
         [Display(Name = "Description")]
         public string Desc { get; set; }

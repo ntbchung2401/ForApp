@@ -1,12 +1,11 @@
 ﻿@model IEnumerable<ForApp.Models.Cart>
-
 @{
 	ViewData["Title"] = "Cart";
 }
 
 <h1>Check Your Cart</h1>
 <p>
-    <a asp-controller="Orders" asp-action="OrderHistory">List Order</a>
+	<a asp-controller="Orders" asp-action="OrderHistory">List Order</a>
 </p>
 
 <table class="table">
@@ -21,7 +20,9 @@
 			<th>
 				@Html.DisplayNameFor(model => model.BookIsbn)
 			</th>
-			<th></th>
+			<th>
+				Total
+			</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -32,28 +33,21 @@
 					@Html.DisplayFor(modelItem => item.UId)
 				</td>
 				<td>
-					<div class="d-flex flex-row">
-                    <button class="btn btn-link px-2"
-                      onclick="this.parentNode.querySelector('input[type=number]').stepDown()">
-                      <i class="fas fa-minus"></i>
-                    </button>
-
-                    <input id="quantity" min="1" name="quantity" value="" type="number"
-                      class="form-control form-control-sm" style="width: 50px;" />
-					  @*<input asp-for="Quantity" min="1" class="form-control" />
-					  <span asp-validation-for="Quantity" class="text-danger"></span>*@
-                    <button class="btn btn-link px-2"
-                      onclick="this.parentNode.querySelector('input[type=number]').stepUp()">
-                      <i class="fas fa-plus"></i>
-                    </button>
-                  </div>
+					 <form method="post" asp-controller="Carts" asp-action="Update">
+                                <input hidden name="UId" asp-for="@item.UId">
+                                <input hidden name="BookIsbn" asp-for="@item.BookIsbn">         
+                                <input id="quantity" id="quantity" name="quantity"  asp-for="@item.Quantity" type="number">                  
+                                <input type="submit" value="Update" class="btn btn-outline-success btn-sm"/>
+                     </form>
 				</td>
 				<td>
 					@Html.DisplayFor(modelItem => item.BookIsbn)
+				</td>
+				<td>
+					<span class='table-sub-total'>@(item.Book.Price * item.Quantity)</span>
 				</td>
 			</tr>
 		}
 	</tbody>
 </table>
-
 <a asp-controller="Books" asp-action="Checkout" class="btn btn-primary">Checkout</a>

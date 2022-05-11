@@ -39,7 +39,7 @@ namespace ForApp.Controllers
             string thisUserId = _userManager.GetUserId(HttpContext.User);
             return View(_context.Store.Where(c => c.UId == thisUserId));
         }
-
+        
         // GET: Stores/Details/5
         public async Task<IActionResult> Details(int? id)
         {

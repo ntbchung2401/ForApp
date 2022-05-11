@@ -25,13 +25,29 @@ namespace ForApp.Controllers
             _userManager = userManager;
         }
 
+        [HttpPost]
+        public async Task<IActionResult> Update(Cart cart)
+        {
 
-        // GET: Carts
-        [Authorize(Roles = "Customer")]
+            if (ModelState.IsValid)
+            {
+                _context.Cart.Update(cart);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            return RedirectToAction("Index");
+        }
+    
+    // GET: Carts
+    [Authorize(Roles = "Customer")]
         public ActionResult Index()
         {
             string thisUserId = _userManager.GetUserId(HttpContext.User);
-            return View(_context.Cart.Where(c => c.UId == thisUserId));
+            var cart = _context.Cart
+                .Include(x => x.Book)
+                .Include(x => x.User)
+                .Where(c => c.UId == thisUserId).ToList();
+            return View(cart);
         }
     }
 }

@@ -24,16 +24,23 @@ namespace ForApp.Controllers
             _context = context;
             _userManager = userManager;
         }
-
         // GET: Orders
         //list order for seller
         public async Task<IActionResult> Index()
-        {
-            var orderContext = _context.Order.Include(o => o.User);
-            return View(await orderContext.ToListAsync());
-        }
-        //order history for customer
-        [Authorize(Roles = "Customer")]
+		{
+			var orderContext = _context.Order.Include(o => o.User);
+			return View(await orderContext.ToListAsync());
+		}
+		/*        public async Task<IActionResult> Index(Order order)
+				{
+					var thisUserId = _userManager.GetUserId(HttpContext.User);
+					Store thisStore = await _context.Store.FirstOrDefaultAsync(s => s.UId == thisUserId);
+					order.UId = thisStore.UId;
+					var userContext = _context.Order.Include(o => o.User);
+					return View(_context.Order.Where(c => c.UId == thisUserId));
+				}*/
+
+		//order history for customer
         public async Task<IActionResult> OrderHistory()
         {
             var userContext = _context.Order.Include(o => o.User);
