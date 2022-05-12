@@ -12,17 +12,18 @@
 	<thead>
 		<tr>
 			<th>
-				@Html.DisplayNameFor(model => model.UId)
-			</th>
-			<th>
-				Quantity
-			</th>
-			<th>
 				@Html.DisplayNameFor(model => model.BookIsbn)
+			</th>
+			<th>
+				Title
+			</th>
+			<th>
+				@Html.DisplayNameFor(model => model.Quantity)
 			</th>
 			<th>
 				Total
 			</th>
+			<th></th>
 		</tr>
 	</thead>
 	<tbody>
@@ -30,24 +31,27 @@
 		{
 			<tr>
 				<td>
-					@Html.DisplayFor(modelItem => item.UId)
+					@Html.DisplayFor(modelItem => item.BookIsbn)
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.Book.Title)
 				</td>
 				<td>
 					 <form method="post" asp-controller="Carts" asp-action="Update">
                                 <input hidden name="UId" asp-for="@item.UId">
                                 <input hidden name="BookIsbn" asp-for="@item.BookIsbn">         
-                                <input id="quantity" id="quantity" name="quantity"  asp-for="@item.Quantity" type="number">                  
-                                <input type="submit" value="Update" class="btn btn-outline-success btn-sm"/>
+                                <input id="quantity" id="quantity" min="1" name="quantity"  asp-for="@item.Quantity" type="number">                  
+                                <div><input type="submit" value="Update" class="btn btn-primary btn-sm"/></div>
                      </form>
 				</td>
 				<td>
-					@Html.DisplayFor(modelItem => item.BookIsbn)
+					<span class='table-sub-total'>@(item.Book.Price * item.Quantity)</span>
 				</td>
 				<td>
-					<span class='table-sub-total'>@(item.Book.Price * item.Quantity)</span>
+					<a asp-action="Remove" asp-route-isbn="@item.BookIsbn" class="btn btn-danger">Remove</a>
 				</td>
 			</tr>
 		}
 	</tbody>
 </table>
-<a asp-controller="Books" asp-action="Checkout" class="btn btn-primary">Checkout</a>
+<a asp-controller="Books" asp-action="Checkout" class="btn btn-primary btn-lg btn-block">Checkout</a>

@@ -11,5 +11,4 @@ namespace ForApp.Models
         public AppUser? User { get; set; }
         public Book? Book { get; set; }
     }
-
 }

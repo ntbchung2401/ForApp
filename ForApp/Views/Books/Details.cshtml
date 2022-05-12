@@ -36,11 +36,13 @@
 					</p>
 				</div>
 			</div>
-			<div class="row">
+			@if ( User.IsInRole("Customer")){
+				<div class="row">
 				<div class="col-md-4">
 					<a asp-action="AddToCart" asp-route-isbn="@Model.Isbn" class="btn btn-primary">Add to cart</a>
 				</div>
 			</div>
+			}
 			<ul class="list-group">
 				<li class="list-group-item"><span class="font-weight-bold">Category -</span>@Model.Category</li>
 				<li class="list-group-item"><span class="font-weight-bold">Total Pages -</span>@Model.Pages</li>

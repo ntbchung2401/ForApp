@@ -33,7 +33,7 @@ namespace ForApp.Controllers
         }
         public async Task<IActionResult> Privacy()
         {
-            await _emailSender.SendEmailAsync("chungntbgcd201567@fpt.edu.vn", "test send mail", "just test");
+            await _emailSender.SendEmailAsync("chungntbgcd201567@fpt.edu.vn", "Please reply this message!", "I have trouble in....");
             return View();
         }
         [Authorize(Roles = "Customer")]

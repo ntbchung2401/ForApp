@@ -31,7 +31,7 @@ namespace ForApp.Controllers
 			var orderContext = _context.Order.Include(o => o.User);
 			return View(await orderContext.ToListAsync());
 		}
-		/*        public async Task<IActionResult> Index(Order order)
+        /*        public async Task<IActionResult> Index(Order order)
 				{
 					var thisUserId = _userManager.GetUserId(HttpContext.User);
 					Store thisStore = await _context.Store.FirstOrDefaultAsync(s => s.UId == thisUserId);
@@ -40,7 +40,8 @@ namespace ForApp.Controllers
 					return View(_context.Order.Where(c => c.UId == thisUserId));
 				}*/
 
-		//order history for customer
+        //order history for customer
+        [Authorize(Roles = "Customer")]
         public async Task<IActionResult> OrderHistory()
         {
             var userContext = _context.Order.Include(o => o.User);

@@ -26,6 +26,7 @@ namespace ForApp.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Customer")]
         public async Task<IActionResult> Update(Cart cart)
         {
 
@@ -48,6 +49,15 @@ namespace ForApp.Controllers
                 .Include(x => x.User)
                 .Where(c => c.UId == thisUserId).ToList();
             return View(cart);
+        }
+    [Authorize(Roles = "Customer")]
+        public async Task<IActionResult> Remove(string isbn)
+        {
+            string thisUserId = _userManager.GetUserId(HttpContext.User);
+            Cart fromDb = _context.Cart.FirstOrDefault(c => c.UId == thisUserId && c.BookIsbn == isbn);
+            _context.Remove(fromDb);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Index");
         }
     }
 }

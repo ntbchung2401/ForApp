@@ -15,7 +15,7 @@
         </p>
     </div>
 </form>
-
+<a asp-action="Index" asp-route-sortOrder="@ViewData["PriceSortParm"]">Sort by Price</a>
   <div class="container">
       <div class="row">
           @for (var i = 0; i < @Model.Count; i++)
@@ -28,7 +28,11 @@
                           <h5 class="card-title">@Model[i].Title</h5>
                           <h5 class="card-text">@Model[i].Price $</h5>
                           <a asp-action="Details" asp-route-id="@Model[i].Isbn" class="btn btn-primary">Details</a>
-                          <a asp-action="AddToCart" asp-route-isbn="@Model[i].Isbn" class="btn btn-primary">Add to cart</a>
+                        @if ( User.IsInRole("Customer"))
+                        {
+                            <a asp-action="AddToCart" asp-route-isbn="@Model[i].Isbn" class="btn btn-primary">Add to cart</a>
+
+                        }
                       </div>
                   </div>
               </div>

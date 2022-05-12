@@ -18,7 +18,7 @@ namespace ForApp.Controllers
     {
         private readonly UserContext _context;
         private readonly UserManager<AppUser> _userManager;
-        private readonly int _recordsPerPage = 15;
+        private readonly int _recordsPerPage = 20;
         private readonly IWebHostEnvironment _webHostEnvironment;
         public BooksController(UserContext context, UserManager<AppUser> userManager, IWebHostEnvironment webHostEnvironment)
         {
@@ -59,14 +59,15 @@ namespace ForApp.Controllers
 
 
         // books available in your store
+        [Authorize(Roles = "Seller")]
         public async Task<IActionResult> StoreBook(Book book, string sortOrder, string searchString)
         {
-            var thisUserId = _userManager.GetUserId(HttpContext.User);
-            Store thisStore = await _context.Store.FirstOrDefaultAsync(s => s.UId == thisUserId);
-            book.StoreId = thisStore.Id;
             ViewData["TitleSortParm"] = String.IsNullOrEmpty(sortOrder) ? "title_desc" : "";
             ViewData["PriceSortParm"] = sortOrder == "Price" ? "price_desc" : "Price";
             ViewData["CurrentFilter"] = searchString;
+            var thisUserId = _userManager.GetUserId(HttpContext.User);
+            Store thisStore = await _context.Store.FirstOrDefaultAsync(s => s.UId == thisUserId);
+            book.StoreId = thisStore.Id;
             var userContext = from s in _context.Book.Include(b => b.Store)
                               select s;
             if (!String.IsNullOrEmpty(searchString))
@@ -79,7 +80,7 @@ namespace ForApp.Controllers
                 case "title_desc":
                     userContext = userContext.OrderByDescending(s => s.Title);
                     break;
-                case "Price":
+                case "price_desc":
                     userContext = userContext.OrderByDescending(s => s.Price);
                     break;
                 default:
@@ -89,12 +90,24 @@ namespace ForApp.Controllers
             return View(await _context.Book.Where(c => c.StoreId == book.StoreId).ToListAsync());
         }
         // list book we can add to cart
-        public async Task<IActionResult> Index(string searchString, int id = 0)
+        public async Task<IActionResult> Index(string sortOrder, string searchString, int id = 0)
         {
             var userContext = from s in _context.Book.Include(b => b.Store)
                               select s; ;
             int numberOfRecords = await _context.Book.CountAsync();     //Count SQL
             int numberOfPages = (int)Math.Ceiling((double)numberOfRecords / _recordsPerPage);
+            ViewData["PriceSortParm"] = sortOrder == "Price" ? "price_desc" : "Price";
+            switch (sortOrder)
+            {
+                case "price_desc":
+                    userContext = userContext.OrderByDescending(s => s.Price);
+                    return View(await userContext.AsNoTracking().ToListAsync());
+                    break;
+                default:
+                    userContext = userContext.OrderBy(s => s.Price);
+                    return View(await userContext.AsNoTracking().ToListAsync());
+                    break;
+            }
             ViewBag.numberOfPages = numberOfPages;
             ViewBag.currentPage = id;
             ViewData["CurrentFilter"] = searchString;
@@ -133,6 +146,7 @@ namespace ForApp.Controllers
         }
 
         // GET: Books/Create
+        [Authorize(Roles = "Seller")]
         public IActionResult Create()
         {
             ViewData["StoreId"] = new SelectList(_context.Store, "Id", "Id");
@@ -145,6 +159,7 @@ namespace ForApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Seller")]
         public async Task<IActionResult> Create([Bind("Isbn,Title,Pages,Author,Category,Price,Desc")] Book book, IFormFile image)
         {
             if (image != null)
@@ -171,6 +186,7 @@ namespace ForApp.Controllers
         }
 
         // GET: Books/Edit/5
+        [Authorize(Roles = "Seller")]
         public async Task<IActionResult> Edit(string id)
         {
             if (id == null)
@@ -239,6 +255,7 @@ namespace ForApp.Controllers
             return View(book);
         }
         // GET: Books/Delete/5
+        [Authorize(Roles = "Seller")]
         public async Task<IActionResult> Delete(string id)
         {
             if (id == null)
@@ -306,7 +323,7 @@ namespace ForApp.Controllers
                     Order myOrder = new Order();
                     myOrder.UId = thisUserId;
                     myOrder.OrderDate = DateTime.Now;
-                    myOrder.Total = myDetailsInCart.Select(c => c.Book.Price)
+                    myOrder.Total = myDetailsInCart.Select(c => c.Book.Price*c.Quantity)
                         .Aggregate((c1, c2) => c1 + c2);
                     _context.Add(myOrder);
                     await _context.SaveChangesAsync();
